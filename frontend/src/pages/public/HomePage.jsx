@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { useDashboard } from "../../hooks/useDashboard";
 import AnimatedCounter from "../../components/public/AnimatedCounter";
 import ThreeHeroAnimation from "../../components/public/ThreeHeroAnimation";
@@ -346,31 +347,40 @@ export default function HomePage() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-              {pillars.map((pillar) => (
-                <div
-                  key={pillar.id}
-                  className="bg-surface/60 backdrop-blur-sm border border-outline-variant/30 p-8 rounded-xl group hover:border-primary transition-all duration-300 text-left shadow-sm hover:shadow"
-                >
-                  <span className="material-symbols-outlined text-4xl text-primary mb-6 group-hover:scale-110 transition-transform">
-                    {pillar.icon}
-                  </span>
-                  <h3 className="font-headline-sm text-primary mb-2 text-xl font-bold">
-                    {pillar.title}
-                  </h3>
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-label-caps text-label-caps text-on-surface-variant">
-                      Target Reach
+              {pillars.map((pillar) => {
+                const isLink = pillar.id <= 2;
+                const CardElement = isLink ? Link : "div";
+                return (
+                  <CardElement
+                    key={pillar.id}
+                    {...(isLink ? { to: `/pillars/${pillar.id}` } : {})}
+                    className={`bg-surface/60 backdrop-blur-sm border border-outline-variant/30 p-8 rounded-xl text-left shadow-sm ${
+                      isLink
+                        ? "group hover:border-primary transition-all duration-300 hover:shadow block cursor-pointer hover:-translate-y-1"
+                        : "opacity-85"
+                    }`}
+                  >
+                    <span className={`material-symbols-outlined text-4xl text-primary mb-6 ${isLink ? "group-hover:scale-110 transition-transform" : ""}`}>
+                      {pillar.icon}
                     </span>
-                    <span className="font-data-num text-primary font-bold">{pillar.reach}%</span>
-                  </div>
-                  <div className="w-full bg-surface-variant rounded-full h-1.5">
-                    <div
-                      className="bg-tertiary-container h-1.5 rounded-full transition-all duration-1000"
-                      style={{ width: `${pillar.reach}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
+                    <h3 className={`font-headline-sm text-primary mb-2 text-xl font-bold ${isLink ? "group-hover:text-secondary transition-colors" : ""}`}>
+                      {pillar.title}
+                    </h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-label-caps text-label-caps text-on-surface-variant">
+                        Target Reach
+                      </span>
+                      <span className="font-data-num text-primary font-bold">{pillar.reach}%</span>
+                    </div>
+                    <div className="w-full bg-surface-variant rounded-full h-1.5">
+                      <div
+                        className="bg-tertiary-container h-1.5 rounded-full transition-all duration-1000"
+                        style={{ width: `${pillar.reach}%` }}
+                      ></div>
+                    </div>
+                  </CardElement>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -624,40 +634,20 @@ export default function HomePage() {
               </h5>
               <ul className="space-y-4 font-body-md text-on-surface-variant">
                 <li>
-                  <a
-                    onClick={(e) => handleScrollTo(e, "pillars")}
+                  <Link
+                    to="/pillars/1"
                     className="hover:text-secondary transition-colors cursor-pointer"
-                    href="#pillars"
                   >
-                    Skill Building
-                  </a>
+                    Institution Building
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    onClick={(e) => handleScrollTo(e, "pillars")}
+                  <Link
+                    to="/pillars/2"
                     className="hover:text-secondary transition-colors cursor-pointer"
-                    href="#pillars"
                   >
-                    Health Initiatives
-                  </a>
-                </li>
-                <li>
-                  <a
-                    onClick={(e) => handleScrollTo(e, "pillars")}
-                    className="hover:text-secondary transition-colors cursor-pointer"
-                    href="#pillars"
-                  >
-                    Employment Support
-                  </a>
-                </li>
-                <li>
-                  <a
-                    onClick={(e) => handleScrollTo(e, "pillars")}
-                    className="hover:text-secondary transition-colors cursor-pointer"
-                    href="#pillars"
-                  >
-                    Govt. Integration
-                  </a>
+                    Accessibility
+                  </Link>
                 </li>
               </ul>
             </div>
