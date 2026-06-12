@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const errorHandler = require("./routes/errorhandler");
 const pillarRoutes = require("./routes/pillarRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 app.use(helmet());
@@ -14,6 +15,10 @@ app.use(express.json());
 app.use(
     "/api/pillars",
     pillarRoutes
+);
+app.use(
+    "/api/dashboard",
+    dashboardRoutes
 );
 
 app.use("/admin", adminRoutes);
