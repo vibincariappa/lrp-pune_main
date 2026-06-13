@@ -18,13 +18,21 @@ export default function ThreeHeroAnimation() {
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Absolute positioning overrides to strictly contain canvas inside the parent div
+    renderer.domElement.style.position = "absolute";
+    renderer.domElement.style.top = "0";
+    renderer.domElement.style.left = "0";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
+    renderer.domElement.style.display = "block";
+
     container.appendChild(renderer.domElement);
 
     // Network nodes logic
     const nodeCount = 40;
     const nodes = [];
     const nodeGeometry = new THREE.SphereGeometry(0.06, 16, 16);
-    // Metro Blue color
     const nodeMaterial = new THREE.MeshPhongMaterial({ color: 0x2b6cb0, emissive: 0x2b6cb0, emissiveIntensity: 0.5 });
 
     for (let i = 0; i < nodeCount; i++) {
@@ -46,7 +54,7 @@ export default function ThreeHeroAnimation() {
     }
 
     // Node lines connections
-    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xed8936, transparent: true, opacity: 0.2 }); // Warm Orange
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xed8936, transparent: true, opacity: 0.2 });
     const lineGeometry = new THREE.BufferGeometry();
     const linePositions = new Float32Array(nodeCount * nodeCount * 3);
     lineGeometry.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
@@ -96,19 +104,20 @@ export default function ThreeHeroAnimation() {
 
     animate();
 
-    const handleResize = () => {
-      const w = container.clientWidth || 600;
-      const h = container.clientHeight || 600;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-
-    window.addEventListener("resize", handleResize);
+    const resizeObserver = new ResizeObserver(() => {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      if (w > 0 && h > 0) {
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      }
+    });
+    resizeObserver.observe(container);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
       renderer.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
