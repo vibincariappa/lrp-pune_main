@@ -170,7 +170,13 @@ export default function HomePage() {
           </a>
         </div>
 
-        <div className="hidden md:block">
+        <div className="hidden md:flex items-center gap-4">
+          <Link
+            to="/team/login"
+            className="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-all duration-300 mr-2 text-xs"
+          >
+            Staff Login
+          </Link>
           <button
             onClick={(e) => handleScrollTo(e, "impact")}
             className="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-label-caps text-label-caps transition-all duration-300 hover:opacity-90 active:scale-95 cursor-pointer shadow-sm hover:shadow"
@@ -233,6 +239,13 @@ export default function HomePage() {
             >
               Explore Impact
             </button>
+            <Link
+              to="/team/login"
+              className="w-full text-center font-label-caps text-label-caps text-primary hover:opacity-85 py-2 block text-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Staff Login
+            </Link>
           </div>
         )}
       </nav>
