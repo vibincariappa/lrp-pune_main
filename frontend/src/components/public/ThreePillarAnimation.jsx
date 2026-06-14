@@ -574,6 +574,331 @@ export default function ThreePillarAnimation({ pillarId }) {
       };
 
       animate(0);
+    } else if (pillarId === 5) {
+      camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+      camera.position.set(0, 5, 15);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Absolute positioning to make sure canvas is strictly contained inside the parent div
+      renderer.domElement.style.position = "absolute";
+      renderer.domElement.style.top = "0";
+      renderer.domElement.style.left = "0";
+      renderer.domElement.style.width = "100%";
+      renderer.domElement.style.height = "100%";
+      renderer.domElement.style.display = "block";
+
+      container.appendChild(renderer.domElement);
+
+      const colors = {
+        metroBlue: new THREE.Color(0x1a365d),
+        warmOrange: new THREE.Color(0xed8936),
+        teal: new THREE.Color(0x319795),
+        white: new THREE.Color(0xffffff)
+      };
+
+      const group = new THREE.Group();
+      scene.add(group);
+
+      // Hubs (Employment Centers)
+      const hubs = [];
+      const hubGeo = new THREE.IcosahedronGeometry(0.45, 1);
+      const hubMat = new THREE.MeshPhongMaterial({ 
+        color: colors.metroBlue, 
+        emissive: colors.metroBlue, 
+        emissiveIntensity: 0.6,
+        shininess: 100
+      });
+      
+      for (let i = 0; i < 6; i++) {
+        const hub = new THREE.Mesh(hubGeo, hubMat);
+        const angle = (i / 6) * Math.PI * 2;
+        hub.position.set(Math.cos(angle) * 5.8, 0, Math.sin(angle) * 5.8);
+        group.add(hub);
+        hubs.push(hub);
+      }
+
+      // Nodes (Candidates / Opportunities)
+      const nodes = [];
+      const nodeGeo = new THREE.SphereGeometry(0.08, 16, 16);
+      
+      const connections = [];
+
+      for (let i = 0; i < 60; i++) {
+        const isOrange = Math.random() > 0.5;
+        const color = isOrange ? colors.warmOrange : colors.teal;
+        const mat = new THREE.MeshPhongMaterial({ 
+          color: color,
+          emissive: color,
+          emissiveIntensity: 0.7,
+          shininess: 80
+        });
+        const node = new THREE.Mesh(nodeGeo, mat);
+        
+        const r = 3.5 + Math.random() * 7.5;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        
+        node.position.set(
+          r * Math.sin(phi) * Math.cos(theta), 
+          r * Math.cos(phi) * 0.4, 
+          r * Math.sin(phi) * Math.sin(theta)
+        );
+        
+        const assignedHub = hubs[Math.floor(Math.random() * hubs.length)];
+        node.userData = { 
+          hub: assignedHub, 
+          originalPos: node.position.clone(),
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.005 + Math.random() * 0.008
+        };
+        
+        group.add(node);
+        nodes.push(node);
+
+        // Drawing connection lines representing employment referral pathways
+        const lineMat = new THREE.LineBasicMaterial({ 
+          color: colors.metroBlue, 
+          transparent: true, 
+          opacity: 0.15 
+        });
+        const points = [node.position, assignedHub.position];
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(lineGeo, lineMat);
+        group.add(line);
+
+        connections.push({
+          line: line,
+          node: node,
+          hub: assignedHub
+        });
+      }
+
+      // Traveling Placement Pulses
+      const pulses = [];
+      const pulseCount = 18;
+      const pulseGeo = new THREE.SphereGeometry(0.07, 8, 8);
+      const pulseMat = new THREE.MeshBasicMaterial({ color: colors.warmOrange });
+
+      for (let i = 0; i < pulseCount; i++) {
+        const conn = connections[Math.floor(Math.random() * connections.length)];
+        const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+        pulse.userData = {
+          connection: conn,
+          progress: Math.random(),
+          speed: 0.003 + Math.random() * 0.006
+        };
+        group.add(pulse);
+        pulses.push(pulse);
+      }
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+      scene.add(ambientLight);
+      const pointLight = new THREE.PointLight(0xffffff, 1.8);
+      pointLight.position.set(10, 10, 10);
+      scene.add(pointLight);
+
+      const animate = (time) => {
+        animationFrameId = requestAnimationFrame(animate);
+        const t = time * 0.001;
+
+        group.rotation.y += 0.0015;
+
+        nodes.forEach(n => {
+          n.position.y = n.userData.originalPos.y + Math.sin(t * 1.5 + n.userData.phase) * 0.25;
+          n.position.x = n.userData.originalPos.x + Math.cos(t * 1.0 + n.userData.phase) * 0.1;
+        });
+
+        // Update connection lines physically
+        connections.forEach(conn => {
+          const positions = conn.line.geometry.attributes.position.array;
+          positions[0] = conn.node.position.x;
+          positions[1] = conn.node.position.y;
+          positions[2] = conn.node.position.z;
+          positions[3] = conn.hub.position.x;
+          positions[4] = conn.hub.position.y;
+          positions[5] = conn.hub.position.z;
+          conn.line.geometry.attributes.position.needsUpdate = true;
+        });
+
+        // Animate traveling pulses
+        pulses.forEach(p => {
+          p.userData.progress += p.userData.speed;
+          if (p.userData.progress > 1) {
+            p.userData.progress = 0;
+            p.userData.connection = connections[Math.floor(Math.random() * connections.length)];
+          }
+          const conn = p.userData.connection;
+          p.position.lerpVectors(conn.node.position, conn.hub.position, p.userData.progress);
+          p.scale.setScalar(1 + Math.sin(t * 8) * 0.4);
+        });
+
+        // Hub rotations
+        hubs.forEach((hub, idx) => {
+          hub.rotation.y += 0.01;
+          hub.rotation.x += 0.005;
+          hub.scale.setScalar(1.0 + Math.sin(t * 2.5 + idx) * 0.06);
+        });
+
+        renderer.render(scene, camera);
+      };
+
+      animate(0);
+    } else if (pillarId === 6) {
+      camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+      camera.position.set(0, 5, 15);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Absolute positioning to make sure canvas is strictly contained inside the parent div
+      renderer.domElement.style.position = "absolute";
+      renderer.domElement.style.top = "0";
+      renderer.domElement.style.left = "0";
+      renderer.domElement.style.width = "100%";
+      renderer.domElement.style.height = "100%";
+      renderer.domElement.style.display = "block";
+
+      container.appendChild(renderer.domElement);
+
+      const colors = {
+        metroBlue: new THREE.Color(0x1a365d),
+        warmOrange: new THREE.Color(0xed8936),
+        teal: new THREE.Color(0x319795),
+        white: new THREE.Color(0xffffff)
+      };
+
+      const group = new THREE.Group();
+      scene.add(group);
+
+      // Capability Nodes (Representing mastered skills)
+      const nodes = [];
+      const nodeCount = 40;
+      const nodeGeo = new THREE.IcosahedronGeometry(0.2, 1);
+      
+      for (let i = 0; i < nodeCount; i++) {
+        const isTeal = Math.random() > 0.5;
+        const material = new THREE.MeshPhongMaterial({
+          color: isTeal ? colors.teal : colors.warmOrange,
+          emissive: isTeal ? colors.teal : colors.warmOrange,
+          emissiveIntensity: 0.5,
+          shininess: 100
+        });
+        const node = new THREE.Mesh(nodeGeo, material);
+        
+        const radius = 5 + Math.random() * 7;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        
+        node.position.set(
+          radius * Math.sin(phi) * Math.cos(theta),
+          radius * Math.sin(phi) * Math.sin(theta) * 0.4,
+          radius * Math.cos(phi)
+        );
+        
+        node.userData = {
+          originalPos: node.position.clone(),
+          speed: 0.005 + Math.random() * 0.01,
+          phase: Math.random() * Math.PI * 2,
+          connections: []
+        };
+        
+        group.add(node);
+        nodes.push(node);
+      }
+
+      // Growth Trajectories (Connecting lines)
+      const lineMaterial = new THREE.LineBasicMaterial({ 
+        color: colors.metroBlue, 
+        transparent: true, 
+        opacity: 0.1 
+      });
+
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          if (nodes[i].position.distanceTo(nodes[j].position) < 4) {
+            const points = [nodes[i].position, nodes[j].position];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, lineMaterial);
+            group.add(line);
+            nodes[i].userData.connections.push({ node: nodes[j], line: line });
+          }
+        }
+      }
+
+      // Floating "Ascending" Particles (Transformation)
+      const particles = [];
+      const particleCount = 60;
+      const partGeo = new THREE.SphereGeometry(0.05, 8, 8);
+
+      for (let i = 0; i < particleCount; i++) {
+        const material = new THREE.MeshBasicMaterial({
+          color: colors.white,
+          transparent: true,
+          opacity: 0.3
+        });
+        const p = new THREE.Mesh(partGeo, material);
+        
+        p.position.set(
+          (Math.random() - 0.5) * 20,
+          (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 20
+        );
+        
+        p.userData = {
+          speedY: 0.01 + Math.random() * 0.02,
+          phase: Math.random() * Math.PI * 2
+        };
+        
+        group.add(p);
+        particles.push(p);
+      }
+
+      // Lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+      scene.add(ambientLight);
+      const pointLight = new THREE.PointLight(0xffffff, 1.8);
+      pointLight.position.set(10, 10, 10);
+      scene.add(pointLight);
+
+      const animate = (time) => {
+        animationFrameId = requestAnimationFrame(animate);
+        const t = time * 0.001;
+
+        nodes.forEach(node => {
+          node.position.y = node.userData.originalPos.y + Math.sin(t * 2 + node.userData.phase) * 0.3;
+          node.rotation.x += 0.01;
+          node.rotation.y += 0.01;
+
+          node.userData.connections.forEach(conn => {
+            const positions = conn.line.geometry.attributes.position.array;
+            positions[0] = node.position.x;
+            positions[1] = node.position.y;
+            positions[2] = node.position.z;
+            positions[3] = conn.node.position.x;
+            positions[4] = conn.node.position.y;
+            positions[5] = conn.node.position.z;
+            conn.line.geometry.attributes.position.needsUpdate = true;
+          });
+        });
+
+        particles.forEach(p => {
+          p.position.y += p.userData.speedY;
+          if (p.position.y > 6) p.position.y = -6;
+          p.position.x += Math.sin(t + p.userData.phase) * 0.01;
+        });
+
+        group.rotation.y += 0.001;
+        renderer.render(scene, camera);
+      };
+
+      animate(0);
     } else {
       camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
       camera.position.z = 8;

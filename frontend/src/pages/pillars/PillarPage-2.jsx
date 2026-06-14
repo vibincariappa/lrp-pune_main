@@ -3,11 +3,34 @@ import { Link, useNavigate } from "react-router-dom";
 import { usePillar } from "../../hooks/usePillar";
 import AnimatedCounter from "../../components/public/AnimatedCounter";
 import ThreePillarAnimation from "../../components/public/ThreePillarAnimation";
+import { motion } from "framer-motion";
 
 export default function PillarPage2() {
   const navigate = useNavigate();
   const { data: apiResponse, isLoading } = usePillar(2);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -53,57 +76,112 @@ export default function PillarPage2() {
       </nav>
 
       <main className="pt-20">
-        {/* Hero Section */}
-        <section className="min-h-screen flex flex-col md:flex-row border-b border-outline-variant/10 text-left">
-          <div className="w-full md:w-1/2 p-margin-mobile md:p-margin-desktop flex flex-col justify-center gap-6">
-            <span className="font-label-caps text-label-caps text-on-tertiary-container">PILLAR 2: ACCESSIBILITY</span>
-            <h1 className="font-display-xl text-display-lg-mobile md:text-display-xl text-primary leading-tight font-bold">
-              Democratizing The City's Pulse.
-            </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
-              We are engineering a future where distance is no longer a barrier to growth. Through subsidized transit and targeted mobility support, we connect our community's most vulnerable to the centers of education and commerce.
-            </p>
+        {/* Hero Section with Integrated Three.js Animation */}
+        <section className="relative h-screen flex items-center justify-center overflow-hidden">
+          {/* Three.js Background Layer */}
+          <div className="absolute inset-0 w-full h-full z-0 bg-transparent opacity-85 pointer-events-none">
+            <ThreePillarAnimation pillarId={2} />
+          </div>
+
+          {/* Centered Typography & CTA Layer */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="relative z-10 max-w-4xl mx-auto flex flex-col items-center gap-6 px-6 text-center"
+          >
+            <motion.span
+              variants={itemVariants}
+              className="font-label text-label-caps text-secondary uppercase tracking-[0.3em] font-bold text-xs"
+            >
+              PILLAR TWO
+            </motion.span>
+            
+            <motion.h1
+              variants={itemVariants}
+              className="font-display text-5xl md:text-7xl text-primary font-bold leading-tight tracking-tight"
+            >
+              Accessibility
+            </motion.h1>
+            
+            <motion.p
+              variants={itemVariants}
+              className="font-body text-base md:text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed"
+            >
+              Creating pathways to education, employment and opportunity through improved mobility and accessibility support.
+            </motion.p>
 
             {displayReach && (
-              <div className="text-xs font-label-caps text-primary border border-primary/20 bg-primary/5 px-4 py-2 rounded-lg inline-block w-fit">
-                CURRENT REACH: <span className="font-bold">{displayReach}%</span> Target Accomplished
-              </div>
+              <motion.div variants={itemVariants}>
+                <div className="text-xs font-label text-primary border border-primary/20 bg-primary/5 px-4 py-2 rounded-lg inline-block">
+                  CURRENT REACH: <span className="font-bold">{displayReach}%</span> Target Accomplished
+                </div>
+              </motion.div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-gutter mt-auto pt-8 border-t border-outline-variant/20">
-              <div>
-                <div className="text-secondary font-display-lg text-[40px] font-bold">
-                  <AnimatedCounter value={12450} />
-                </div>
-                <div className="font-label-caps text-label-caps text-on-surface-variant">Total Beneficiaries</div>
-              </div>
-              <div>
-                <div className="text-primary font-display-lg text-[40px] font-bold">
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-wrap gap-4 justify-center pt-2"
+            >
+              <button
+                onClick={() => {
+                  const el = document.getElementById("overview");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="bg-primary text-on-primary px-8 py-4 rounded-lg font-label-caps text-label-caps transition-all hover:shadow-xl hover:-translate-y-0.5 cursor-pointer font-bold"
+              >
+                View Impact
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.getElementById("timeline");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="border border-primary text-primary px-8 py-4 rounded-lg font-label-caps text-label-caps transition-all hover:bg-primary/5 cursor-pointer font-bold"
+              >
+                Explore Programs
+              </button>
+            </motion.div>
+
+            {/* Metric Preview inside Hero container - moved below CTA */}
+            <motion.div
+              variants={itemVariants}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left w-full mt-10 max-w-3xl"
+            >
+              {/* Metric Card 1 */}
+              <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                <span className="font-label text-xs text-on-surface-variant uppercase tracking-wider font-bold">
+                  Students Supported
+                </span>
+                <span className="font-data-num text-3xl text-primary font-bold">
                   <AnimatedCounter value={8200} />
-                </div>
-                <div className="font-label-caps text-label-caps text-on-surface-variant">Student Passes</div>
+                </span>
               </div>
-              <div>
-                <div className="text-primary-container font-display-lg text-[40px] font-bold">
+
+              {/* Metric Card 2 */}
+              <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                <span className="font-label text-xs text-on-surface-variant uppercase tracking-wider font-bold">
+                  Passes Distributed
+                </span>
+                <span className="font-data-num text-3xl text-secondary font-bold">
+                  <AnimatedCounter value={12450} />
+                </span>
+              </div>
+
+              {/* Metric Card 3 */}
+              <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                <span className="font-label text-xs text-on-surface-variant uppercase tracking-wider font-bold">
+                  Working Professionals Assisted
+                </span>
+                <span className="font-data-num text-3xl text-primary-container font-bold">
                   <AnimatedCounter value={4250} />
-                </div>
-                <div className="font-label-caps text-label-caps text-on-surface-variant">Professional Passes</div>
+                </span>
               </div>
-            </div>
-          </div>
-          <div className="w-full md:w-1/2 relative min-h-[400px] bg-primary-container border border-outline-variant/10 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="absolute inset-0 w-full h-full" id="threejs-container-PILLAR2_REFINE">
-              <ThreePillarAnimation pillarId={2} />
-            </div>
-            <div className="absolute bottom-10 right-10 bg-surface/10 border border-white/20 backdrop-blur-xl p-4 rounded-xl text-white z-20">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-secondary">share_location</span>
-                <span className="font-label-caps text-[10px]">REAL-TIME NETWORK SYNC</span>
-              </div>
-              <div className="h-1 w-32 bg-white/20 rounded-full overflow-hidden">
-                <div className="h-full bg-secondary w-2/3"></div>
-              </div>
-            </div>
+            </motion.div>
+          </motion.div>
+
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce z-10">
+            <span className="material-symbols-outlined text-primary text-3xl">expand_more</span>
           </div>
         </section>
 
@@ -141,7 +219,7 @@ export default function PillarPage2() {
         </section>
 
         {/* Accessibility Overview (Interactive Bento) */}
-        <section className="py-stack-lg px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto text-left">
+        <section id="overview" className="py-stack-lg px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto text-left">
           <div className="mb-stack-lg">
             <h2 className="font-display-lg text-display-lg text-primary mb-4 font-bold">Core Accessibility Portals</h2>
             <div className="h-1 w-20 bg-secondary"></div>
@@ -376,7 +454,7 @@ export default function PillarPage2() {
         </section>
 
         {/* Accessibility Timeline */}
-        <section className="py-stack-lg bg-surface text-center">
+        <section id="timeline" className="py-stack-lg bg-surface text-center">
           <div className="px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mb-stack-lg">
             <span className="font-label-caps text-label-caps text-secondary font-bold">METHODOLOGY</span>
             <h2 className="font-display-lg text-display-lg text-primary font-bold mt-2">From Identification to Impact</h2>
