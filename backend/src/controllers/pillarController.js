@@ -54,7 +54,34 @@ async (req,res,next)=>{
 
 };
 
+const getPillar = async (req, res, next) => {
+    try {
+        const id = Number(req.params.id);
+        if (isNaN(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Pillar ID must be a valid number"
+            });
+        }
+        const records = await pillarService.getPillarDataById(id);
+        const attributes = {};
+        records.forEach((row) => {
+            attributes[row.key] = row.value;
+        });
+        res.status(200).json({
+            success: true,
+            data: {
+                pillar: id,
+                attributes
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     getAllPillars,
-    updatePillar
+    updatePillar,
+    getPillar
 };

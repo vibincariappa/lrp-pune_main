@@ -23,7 +23,16 @@ const updatePillar = async (pillar, key, value) => {
     });
 };
 
+const getPillarDataById = async (id) => {
+    return await prisma.pillarData.findMany({
+        where: {
+            pillar: Number(id)
+        }
+    });
+};
+
 module.exports = {
     getAllPillars,
-    updatePillar
+    updatePillar,
+    getPillarDataById
 };

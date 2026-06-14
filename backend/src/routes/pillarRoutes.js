@@ -5,10 +5,12 @@ const validate = require("../middleware/validates");
 const { updatePillarSchema } = require("../vaidators/pillarValidator");
 const {
     getAllPillars,
-    updatePillar
+    updatePillar,
+    getPillar
 } = require("../controllers/pillarController");
 
 router.get("/", getAllPillars);
+router.get("/:id", getPillar);
 
 router.put(
     "/:id",
