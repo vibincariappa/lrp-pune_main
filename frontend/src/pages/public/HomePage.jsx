@@ -6,6 +6,7 @@ import ThreeHeroAnimation from "../../components/public/ThreeHeroAnimation";
 import PillarShaderAnimation from "../../components/public/PillarShaderAnimation";
 import PerformanceCharts from "../../components/public/PerformanceCharts";
 import FootprintMap from "../../components/public/FootprintMap";
+import { motion } from "framer-motion";
 
 export default function HomePage() {
   const { data: dashResponse, isLoading, isError } = useDashboard();
@@ -76,6 +77,30 @@ export default function HomePage() {
   const stories = apiData?.stories || defaultStories;
   const growthData = apiData?.charts?.programGrowth;
   const distributionData = apiData?.charts?.beneficiaryDistribution;
+
+  const averageReach = Math.round(pillars.reduce((acc, curr) => acc + curr.reach, 0) / pillars.length) || 81;
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
 
   const handleScrollTo = (e, id) => {
     e.preventDefault();
@@ -213,123 +238,154 @@ export default function HomePage() {
       </nav>
 
       <main className="pt-20">
-        {/* Hero Section */}
-        <section className="relative min-h-[800px] md:min-h-[921px] flex flex-col md:flex-row items-center overflow-hidden px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto py-stack-lg gap-8">
-          <div className="w-full md:w-1/2 z-10 space-y-stack-md text-left">
-            <span className="font-label-caps text-label-caps text-secondary uppercase tracking-widest font-bold">
-              Resilience &amp; Empowerment
-            </span>
-            <h1 className="font-display-xl text-display-lg-mobile md:text-display-xl text-primary leading-tight font-bold">
-              Pune Metro Livelihood Restoration Program
-            </h1>
-            <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
-              Supporting Project Affected Families through sustainable community development, fostering long-term economic stability and social equity across the Pune Metro corridor.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-4">
+        {/* Immersive Centered Hero Section with Integrated Three.js Network Background */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto py-24 text-center">
+          {/* Three.js Background Layer */}
+          <div className="absolute inset-0 w-full h-full z-0 bg-transparent opacity-85 pointer-events-none">
+            <ThreeHeroAnimation />
+          </div>
+
+          {/* Centered Typography & CTA Layer */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="relative z-10 max-w-5xl mx-auto flex flex-col items-center gap-6 pt-12"
+          >
+            <motion.span
+              variants={itemVariants}
+              className="font-label text-label-caps text-secondary uppercase tracking-[0.3em] font-bold text-xs"
+            >
+              LIVELIHOOD RESTORATION PROGRAM
+            </motion.span>
+            
+            <motion.h1
+              variants={itemVariants}
+              className="font-display text-5xl md:text-7xl text-primary font-bold leading-tight tracking-tight"
+            >
+              Pune Metro <br className="hidden md:inline" /> Livelihood Restoration Program
+            </motion.h1>
+            
+            <motion.p
+              variants={itemVariants}
+              className="font-body text-base md:text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed"
+            >
+              Supporting Project Affected Families through Institution Building, Accessibility, Government Convergence, Health, Employment Assistance and Skill Development.
+            </motion.p>
+
+            <motion.div variants={itemVariants}>
+              <div className="text-xs font-label text-primary border border-primary/20 bg-primary/5 px-4 py-2 rounded-lg inline-block">
+                CURRENT PROGRAM REACH: <span className="font-bold">{averageReach}%</span> Target Accomplished
+              </div>
+            </motion.div>
+
+            <motion.div
+              variants={itemVariants}
+              className="flex flex-wrap gap-4 justify-center pt-2"
+            >
               <button
                 onClick={(e) => handleScrollTo(e, "impact")}
-                className="bg-primary text-on-primary px-8 py-4 rounded-lg font-label-caps text-label-caps transition-all hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+                className="bg-primary text-on-primary px-8 py-4 rounded-lg font-label-caps text-label-caps transition-all hover:shadow-xl hover:-translate-y-0.5 cursor-pointer font-bold"
               >
                 Explore Impact
               </button>
               <button
                 onClick={(e) => handleScrollTo(e, "timeline")}
-                className="border border-primary text-primary px-8 py-4 rounded-lg font-label-caps text-label-caps transition-all hover:bg-primary/5 cursor-pointer"
+                className="border border-primary text-primary px-8 py-4 rounded-lg font-label-caps text-label-caps transition-all hover:bg-primary/5 cursor-pointer font-bold"
               >
                 Watch Story
               </button>
-            </div>
-          </div>
-          <div className="w-full md:w-1/2 h-[400px] md:h-[600px] relative">
-            <ThreeHeroAnimation />
-          </div>
-        </section>
+            </motion.div>
 
-        {/* Live Impact Overview */}
-        <section id="impact" className="bg-surface-container-low py-stack-lg border-y border-outline-variant/20 scroll-mt-20">
-          <div className="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop overflow-x-auto">
-            <div className="flex gap-gutter min-w-max pb-4">
-              {/* Metric Card 1 */}
-              <div className="bg-surface border border-outline-variant/30 p-6 rounded-xl min-w-[240px] flex flex-col gap-2 shadow-sm">
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-                  Families Supported
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-headline-md font-data-num text-primary text-3xl font-bold">
-                    <AnimatedCounter value={metrics.familiesSupported.value} />
+            {/* KPI preview preview inside Hero container - moved below CTA */}
+            <motion.div
+              variants={itemVariants}
+              id="impact"
+              className="w-full mt-16 scroll-mt-20"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 text-left w-full">
+                {/* Metric Card 1 */}
+                <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                  <span className="font-label text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
+                    Families Supported
                   </span>
-                  <span className="text-green-600 flex items-center text-sm font-data-num font-bold">
-                    <span className="material-symbols-outlined text-sm mr-0.5">trending_up</span>{" "}
-                    {metrics.familiesSupported.trend}
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-data-num text-primary font-bold">
+                      <AnimatedCounter value={metrics.familiesSupported.value} />
+                    </span>
+                    <span className="text-green-600 flex items-center text-[10px] font-data-num font-bold">
+                      <span className="material-symbols-outlined text-[10px] mr-0.5">trending_up</span>{" "}
+                      {metrics.familiesSupported.trend}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Metric Card 2 */}
+                <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                  <span className="font-label text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
+                    Students Benefited
                   </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-data-num text-primary font-bold">
+                      <AnimatedCounter value={metrics.studentsBenefited.value} />
+                    </span>
+                    <span className="text-green-600 flex items-center text-[10px] font-data-num font-bold">
+                      <span className="material-symbols-outlined text-[10px] mr-0.5">trending_up</span>{" "}
+                      {metrics.studentsBenefited.trend}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Metric Card 3 */}
+                <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                  <span className="font-label text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
+                    Training Participants
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-data-num text-primary font-bold">
+                      <AnimatedCounter value={metrics.trainingParticipants.value} />
+                    </span>
+                    <span className="text-primary flex items-center text-[10px] font-data-num font-bold">
+                      <span className="material-symbols-outlined text-[10px] mr-0.5">trending_flat</span>{" "}
+                      {metrics.trainingParticipants.trend}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Metric Card 4 */}
+                <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                  <span className="font-label text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
+                    Health Beneficiaries
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-data-num text-primary font-bold">
+                      <AnimatedCounter value={metrics.healthBeneficiaries.value} />
+                    </span>
+                    <span className="text-green-600 flex items-center text-[10px] font-data-num font-bold">
+                      <span className="material-symbols-outlined text-[10px] mr-0.5">trending_up</span>{" "}
+                      {metrics.healthBeneficiaries.trend}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Metric Card 5 */}
+                <div className="bg-white/40 backdrop-blur-md border border-outline-variant/30 p-6 rounded-xl flex flex-col gap-2 shadow-sm hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300">
+                  <span className="font-label text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">
+                    Employment Assist.
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-data-num text-primary font-bold">
+                      <AnimatedCounter value={metrics.employmentAssistance.value} />
+                    </span>
+                    <span className="text-green-600 flex items-center text-[10px] font-data-num font-bold">
+                      <span className="material-symbols-outlined text-[10px] mr-0.5">trending_up</span>{" "}
+                      {metrics.employmentAssistance.trend}
+                    </span>
+                  </div>
                 </div>
               </div>
-
-              {/* Metric Card 2 */}
-              <div className="bg-surface border border-outline-variant/30 p-6 rounded-xl min-w-[240px] flex flex-col gap-2 shadow-sm">
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-                  Students Benefited
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-headline-md font-data-num text-primary text-3xl font-bold">
-                    <AnimatedCounter value={metrics.studentsBenefited.value} />
-                  </span>
-                  <span className="text-green-600 flex items-center text-sm font-data-num font-bold">
-                    <span className="material-symbols-outlined text-sm mr-0.5">trending_up</span>{" "}
-                    {metrics.studentsBenefited.trend}
-                  </span>
-                </div>
-              </div>
-
-              {/* Metric Card 3 */}
-              <div className="bg-surface border border-outline-variant/30 p-6 rounded-xl min-w-[240px] flex flex-col gap-2 shadow-sm">
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-                  Training Participants
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-headline-md font-data-num text-primary text-3xl font-bold">
-                    <AnimatedCounter value={metrics.trainingParticipants.value} />
-                  </span>
-                  <span className="text-primary flex items-center text-sm font-data-num font-bold">
-                    <span className="material-symbols-outlined text-sm mr-0.5">trending_flat</span>{" "}
-                    {metrics.trainingParticipants.trend}
-                  </span>
-                </div>
-              </div>
-
-              {/* Metric Card 4 */}
-              <div className="bg-surface border border-outline-variant/30 p-6 rounded-xl min-w-[240px] flex flex-col gap-2 shadow-sm">
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-                  Health Beneficiaries
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-headline-md font-data-num text-primary text-3xl font-bold">
-                    <AnimatedCounter value={metrics.healthBeneficiaries.value} />
-                  </span>
-                  <span className="text-green-600 flex items-center text-sm font-data-num font-bold">
-                    <span className="material-symbols-outlined text-sm mr-0.5">trending_up</span>{" "}
-                    {metrics.healthBeneficiaries.trend}
-                  </span>
-                </div>
-              </div>
-
-              {/* Metric Card 5 */}
-              <div className="bg-surface border border-outline-variant/30 p-6 rounded-xl min-w-[240px] flex flex-col gap-2 shadow-sm">
-                <span className="font-label-caps text-label-caps text-on-surface-variant uppercase">
-                  Employment Assistance
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-headline-md font-data-num text-primary text-3xl font-bold">
-                    <AnimatedCounter value={metrics.employmentAssistance.value} />
-                  </span>
-                  <span className="text-green-600 flex items-center text-sm font-data-num font-bold">
-                    <span className="material-symbols-outlined text-sm mr-0.5">trending_up</span>{" "}
-                    {metrics.employmentAssistance.trend}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* The Six Pillars */}
@@ -348,7 +404,7 @@ export default function HomePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
               {pillars.map((pillar) => {
-                const isLink = pillar.id <= 2;
+                const isLink = pillar.id <= 6;
                 const CardElement = isLink ? Link : "div";
                 return (
                   <CardElement
@@ -647,6 +703,38 @@ export default function HomePage() {
                     className="hover:text-secondary transition-colors cursor-pointer"
                   >
                     Accessibility
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/pillars/3"
+                    className="hover:text-secondary transition-colors cursor-pointer"
+                  >
+                    Government Convergence
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/pillars/4"
+                    className="hover:text-secondary transition-colors cursor-pointer"
+                  >
+                    Health &amp; Well-being
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/pillars/5"
+                    className="hover:text-secondary transition-colors cursor-pointer"
+                  >
+                    Employment Assistance
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/pillars/6"
+                    className="hover:text-secondary transition-colors cursor-pointer"
+                  >
+                    Skill Building
                   </Link>
                 </li>
               </ul>
