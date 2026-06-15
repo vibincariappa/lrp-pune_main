@@ -1,24 +1,41 @@
-const express = require("express");
-const { register, login } = require("../controllers/authController");
-const validate = require("../middleware/validates");
-
 const router = require("express").Router();
+const { register, login, logout } = require("../controllers/authController");
+const validate = require("../middleware/validates");
+const authenticate = require("../middleware/authenticate");
+const { loginLimiter } = require("../config/rateLimit");
+const { registerSchema, loginSchema } = require("../validators/authValidator");
 
-const {
-    registerSchema,
-    loginSchema
-} = require("../vaidators/authValidator");
-
+// Login endpoint with rate limiter and Zod validation
 router.post(
-    "/register",
-    validate(registerSchema),
-    register
+  "/login",
+  loginLimiter,
+  validate(loginSchema),
+  login
 );
 
+// Logout endpoint
 router.post(
-    "/login",
-    validate(loginSchema),
-    login
+  "/logout",
+  logout
+);
+
+// Fetch current user details for session persistence
+router.get(
+  "/me",
+  authenticate,
+  (req, res) => {
+    return res.json({
+      success: true,
+      admin: req.user
+    });
+  }
+);
+
+// Registration endpoint (for administrator provisioning)
+router.post(
+  "/register",
+  validate(registerSchema),
+  register
 );
 
 module.exports = router;

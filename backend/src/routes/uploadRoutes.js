@@ -5,3 +5,4 @@ const { uploadPdf } = require('../controllers/uploadController');
 router.post('/', upload.single('file'), uploadPdf);
 
 module.exports = router;
+

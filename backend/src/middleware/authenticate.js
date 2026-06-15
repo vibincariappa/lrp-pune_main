@@ -1,35 +1,57 @@
-const { verifyToken } = require("../utils/jwtHelper");
+const { verifyAccessToken } = require("../utils/jwtHelper");
+const authService = require("../services/authService");
 
-const authenticate = (req, res, next) => {
-    const authHeader = req.headers.authorization;
+const authenticate = async (req, res, next) => {
+  let token = null;
 
-    if (!authHeader) {
-        return res.status(401).json({
-            success: false,
-            message: "Token missing"
-        });
+  // 1. Read from HTTP-Only cookie
+  if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  }
+
+  // 2. Fallback to Authorization Header (useful for API testing / Postman compatibility)
+  if (!token && req.headers.authorization) {
+    const parts = req.headers.authorization.split(" ");
+    if (parts.length === 2 && parts[0] === "Bearer") {
+      token = parts[1];
+    }
+  }
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication token missing"
+    });
+  }
+
+  try {
+    const decoded = verifyAccessToken(token);
+    
+    // Verify user is still valid and active in database
+    const activeUser = await authService.validateUser(decoded.id);
+    if (!activeUser) {
+      return res.status(401).json({
+        success: false,
+        message: "User account is inactive or not found"
+      });
     }
 
-    const parts = authHeader.split(" ");
-    if (parts.length !== 2 || parts[0] !== "Bearer") {
-        return res.status(401).json({
-            success: false,
-            message: "Authorization format must be Bearer <token>"
-        });
-    }
+    req.user = {
+      id: activeUser.id,
+      username: activeUser.username,
+      role: activeUser.role
+    };
 
-    const token = parts[1];
+    // Backward compatibility for existing endpoints using req.admin
+    req.admin = req.user;
 
-    try {
-        const decoded = verifyToken(token);
-        req.admin = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({
-            success: false,
-            message: "Invalid token"
-        });
-    }
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired authentication token"
+    });
+  }
 };
 
 module.exports = authenticate;
