@@ -25,13 +25,19 @@ async function cleanTestUsers() {
   await prisma.loginAudit.deleteMany({
     where: {
       admin: {
-        email: { in: [superAdminUser.email, developerUser.email] }
+        OR: [
+          { email: { in: [superAdminUser.email, developerUser.email] } },
+          { username: { in: [superAdminUser.username, developerUser.username] } }
+        ]
       }
     }
   });
   await prisma.admin.deleteMany({
     where: {
-      email: { in: [superAdminUser.email, developerUser.email] }
+      OR: [
+        { email: { in: [superAdminUser.email, developerUser.email] } },
+        { username: { in: [superAdminUser.username, developerUser.username] } }
+      ]
     }
   });
 }

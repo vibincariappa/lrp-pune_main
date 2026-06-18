@@ -29,7 +29,9 @@ app.use(generalLimiter);
 
 // Routes
 app.use("/api/pillars", pillarRoutes);
+app.use("/api/pillarpage", pillarRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/home", dashboardRoutes);
 app.use("/admin", adminRoutes);
 app.use("/auth", authRoutes);
 app.use("/api/upload", uploadRoutes);

@@ -6,6 +6,8 @@ const apiClient = axios.create({
  import.meta.env
  .VITE_API_URL,
 
+ withCredentials: true,
+
  headers:{
 
   "Content-Type":

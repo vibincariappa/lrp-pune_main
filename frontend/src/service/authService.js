@@ -1,15 +1,13 @@
-import apiClient
-from "./apiClient";
+import apiClient from "./apiClient";
 
-export const login =
-(data)=>{
+export const login = (data) => {
+  return apiClient.post("/auth/login", data);
+};
 
- return apiClient.post(
+export const logout = () => {
+  return apiClient.post("/auth/logout");
+};
 
-  "/auth/login",
-
-  data
-
- );
-
+export const checkSession = () => {
+  return apiClient.get("/auth/me");
 };

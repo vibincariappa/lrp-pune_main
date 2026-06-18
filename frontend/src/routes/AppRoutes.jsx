@@ -4,6 +4,7 @@ import LoginPage from "../pages/admin/LoginPage";
 import DashboardPage from "../pages/admin/DashboardPage";
 import ProtectedRoute from "./Protectedroute";
 import { PERMISSIONS } from "../lib/rbac";
+import PillarPage from "../pages/pillars/PillarPage";
 
 export default function AppRoutes() {
   return (
@@ -11,6 +12,8 @@ export default function AppRoutes() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/pillars/:id" element={<PillarPage />} />
+        <Route path="/pillarpage/:id" element={<PillarPage />} />
         <Route path="/team/login" element={<LoginPage />} />
 
         {/* Protected Routes */}
