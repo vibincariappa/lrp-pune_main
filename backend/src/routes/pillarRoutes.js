@@ -3,7 +3,7 @@ const authenticate = require("../middleware/authenticate");
 const authorize = require("../middleware/authorize");
 const validate = require("../middleware/validates");
 const { PERMISSIONS } = require("../config/permissions");
-const { updatePillarSchema } = require("../vaidators/pillarValidator");
+const { updatePillarSchema } = require("../validators/pillarValidator");
 const {
     getAllPillars,
     updatePillar,

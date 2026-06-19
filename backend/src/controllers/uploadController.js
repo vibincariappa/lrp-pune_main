@@ -2,7 +2,7 @@ const fs = require("fs");
 const prisma = require("../config/db");
 const { parsePdf } = require("../services/pdfServices");
 const aiService = require("../services/aiService");
-const { extractedDataSchema } = require("../vaidators/extractedDataValidator");
+const { extractedDataSchema } = require("../validators/extractedDataValidator");
 
 const uploadPdf = async (req, res, next) => {
     let logEntry = null;
