@@ -8,17 +8,9 @@ const PORT = process.env.PORT || 5000;
 let server;
 
 async function startServer() {
-  console.log("Starting Pune Metro LRP Server...");
-  
   try {
-    // 1. Verify Database Connection
-    console.log("Verifying database connection...");
-    await prisma.$queryRaw`SELECT 1`;
-    console.log("Database connection verification successful.");
-
-    // 2. Start Express Application
     server = app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode.`);
+      console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode.`, '0.0.0.0');
     });
 
     // 3. Handle Server Errors
@@ -50,7 +42,7 @@ const gracefulServerShutdown = () => {
       console.log("Server shutdown sequence completed successfully.");
       process.exit(0);
     });
-    
+
     // Force exit if connections take too long to close
     setTimeout(() => {
       console.error("Forcing server termination due to slow shutdown...");

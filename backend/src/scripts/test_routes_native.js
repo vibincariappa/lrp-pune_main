@@ -21,7 +21,7 @@ async function testRoutes() {
     const regRes = await fetch(`${baseUrl}/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: testEmail, password, role: "EDITOR" })
+    body: JSON.stringify({ email: testEmail, username: `testadmin_${Date.now()}`, password, role: "ADMIN1" })
     });
     const regData = await regRes.json();
     console.log(`   Status: ${regRes.status}`);
@@ -37,13 +37,12 @@ async function testRoutes() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: testEmail, password })
     });
-    const loginData = await loginRes.json();
-    console.log(`   Status: ${loginRes.status}`);
-    console.log("   Response:", JSON.stringify(loginData));
-    if (loginRes.status !== 200 || !loginData.token) {
+    const setCookieHeader = loginRes.headers.get("set-cookie");
+    const match = setCookieHeader ? setCookieHeader.match(/accessToken=([^;]+)/) : null;
+    const token = match ? match[1] : null;
+    if (loginRes.status !== 200 || !token) {
       throw new Error("Login test failed");
     }
-    const token = loginData.token;
 
     // 3. Test creating admin via admin controller route (should be successful)
     console.log("\n3. Testing /admin/ route (admin controller)...");
@@ -51,7 +50,7 @@ async function testRoutes() {
     const adminRes = await fetch(`${baseUrl}/admin/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: otherEmail, password: "securepassword", role: "SUPER_ADMIN" })
+    body: JSON.stringify({ email: otherEmail, username: `otheradmin_${Date.now()}`, password: "securepassword", role: "SUPER_ADMIN1" })
     });
     const adminData = await adminRes.json();
     console.log(`   Status: ${adminRes.status}`);
