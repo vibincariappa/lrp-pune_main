@@ -46,15 +46,19 @@ model PillarData {
 
 model UploadLog {
 
-  id          String @id @default(uuid())
+  id            String @id @default(uuid())
 
-  filename    String
+  filename      String
 
-  storagePath String
+  storagePath   String
 
-  status      UploadStatus
+  status        UploadStatus
 
-  createdAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  extractedData String?
+
+  isSynced      Boolean @default(false)
 
 }
 

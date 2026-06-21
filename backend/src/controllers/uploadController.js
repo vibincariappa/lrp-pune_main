@@ -1,111 +1,102 @@
-const fs = require("fs");
-const prisma = require("../config/db");
-const { parsePdf } = require("../services/pdfServices");
-const aiService = require("../services/aiService");
-const { extractedDataSchema } = require("../validators/extractedDataValidator");
+const path = require("path");
+const uploadService = require("../services/uploadService");
 
+/**
+ * Endpoint to upload a PDF file.
+ * Triggers PDF text extraction and AI parsing without applying metrics to live DB.
+ * POST /api/upload
+ */
 const uploadPdf = async (req, res, next) => {
-    let logEntry = null;
-    let filePath = null;
-
     try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: "No file provided"
-            });
-        }
+        const adminId = req.user.id;
+        const file = req.file;
 
-        filePath = req.file.path;
-        const fileName = req.file.originalname;
+        const result = await uploadService.saveUpload(adminId, file);
 
-        // Create initial pending upload log in database
-        logEntry = await prisma.uploadLog.create({
-            data: {
-                filename: fileName,
-                storagePath: filePath,
-                status: "PROCESSING"
-            }
+        return res.status(201).json({
+            uploadId: result.uploadId,
+            filename: result.filename,
+            status: result.status,
+            extractedMetrics: result.extractedMetrics,
+            isSynced: result.isSynced
         });
+    } catch (error) {
+        next(error);
+    }
+};
 
-        // 1. Parse PDF text
-        const textContent = await parsePdf(filePath);
+/**
+ * Endpoint to fetch all upload logs metadata.
+ * GET /api/upload/logs
+ */
+const getUploadLogs = async (req, res, next) => {
+    try {
+        const logs = await uploadService.getUploadLogs();
+        return res.status(200).json(logs);
+    } catch (error) {
+        next(error);
+    }
+};
 
-        // 2. Extract metrics using optimized AI service
-        const aiJsonResult = await aiService.extractMetrics(textContent);
+/**
+ * Endpoint to confirm and apply AI-extracted metrics to live PillarData.
+ * POST /api/upload/sync/:id
+ */
+const syncUploadMetrics = async (req, res, next) => {
+    try {
+        const adminId = req.user.id;
+        const uploadId = req.params.id;
 
-        // 3. Parse and validate using Zod schema
-        const parsedJson = JSON.parse(aiJsonResult);
-        const validatedMetrics = extractedDataSchema.parse(parsedJson);
-
-        // 4. Save/Upsert data into database
-        for (const metric of validatedMetrics) {
-            await prisma.pillarData.upsert({
-                where: {
-                    pillar_key: {
-                        pillar: metric.pillar,
-                        key: metric.key
-                    }
-                },
-                update: {
-                    value: metric.value
-                },
-                create: {
-                    pillar: metric.pillar,
-                    key: metric.key,
-                    value: metric.value
-                }
-            });
-        }
-
-        // 5. Mark upload log as completed
-        await prisma.uploadLog.update({
-            where: { id: logEntry.id },
-            data: { status: "COMPLETED" }
-        });
-
-        // Delete temp file
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
+        const result = await uploadService.syncMetrics(adminId, uploadId);
 
         return res.status(200).json({
             success: true,
-            message: "PDF uploaded, processed by AI, and database synchronized successfully",
-            file: fileName,
-            metricsCount: validatedMetrics.length,
-            data: validatedMetrics
+            syncedRecords: result.syncedRecords
         });
-
     } catch (error) {
-        // Clean up temp file on error
-        if (filePath && fs.existsSync(filePath)) {
-            try {
-                fs.unlinkSync(filePath);
-            } catch (unlinkError) {
-                console.error("Failed to delete temp file:", unlinkError.message);
-            }
-        }
+        next(error);
+    }
+};
 
-        // Update upload log status to FAILED in the DB
-        if (logEntry) {
-            try {
-                await prisma.uploadLog.update({
-                    where: { id: logEntry.id },
-                    data: { status: "FAILED" }
-                });
-            } catch (dbError) {
-                console.error("Failed to update upload log status to FAILED:", dbError.message);
-            }
-        }
+/**
+ * Endpoint to download a previously uploaded PDF.
+ * GET /api/upload/download/:id
+ */
+const downloadUploadFile = async (req, res, next) => {
+    try {
+        const adminId = req.user.id;
+        const uploadId = req.params.id;
 
-        console.error("PDF Processing Error:", error.message);
+        const result = await uploadService.downloadFile(adminId, uploadId);
 
-        // Pass error to error handler middleware
+        return res.download(result.storagePath, result.filename);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Endpoint to view a previously uploaded document inline.
+ * GET /api/upload/view/:id
+ */
+const viewUploadFile = async (req, res, next) => {
+    try {
+        const adminId = req.user.id;
+        const uploadId = req.params.id;
+
+        const result = await uploadService.viewFile(adminId, uploadId);
+        const absolutePath = path.resolve(result.storagePath);
+
+        return res.sendFile(absolutePath);
+    } catch (error) {
         next(error);
     }
 };
 
 module.exports = {
-    uploadPdf
+    uploadPdf,
+    getUploadLogs,
+    syncUploadMetrics,
+    downloadUploadFile,
+    viewUploadFile
 };
