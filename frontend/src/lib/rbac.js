@@ -36,10 +36,10 @@ export const ROLE_PERMISSIONS = {
 };
 
 /**
- * Checks if a role has the specified permission.
+ * Checks if a given role has a specific permission.
  * Supports dynamic role checking by checking if the role exists in the mapping.
- * @param {string} role 
- * @param {string} permission 
+ * @param {string} role
+ * @param {string} permission
  * @returns {boolean}
  */
 export const hasPermission = (role, permission) => {
@@ -47,9 +47,33 @@ export const hasPermission = (role, permission) => {
   
   const permissions = ROLE_PERMISSIONS[role];
   if (!permissions) {
-    // Dynamic role expansion: unrecognized/new db roles default to view dashboard
+    // Dynamic role expansion: unrecognized/new db roles default to viewing dashboard
     return permission === PERMISSIONS.VIEW_DASHBOARD;
   }
   
   return permissions.includes(permission);
+};
+
+/**
+ * Determines if a role is authorized to access a set of roles or permissions.
+ * @param {string} role
+ * @param {string|string[]} allowedRolesOrPermissions
+ * @returns {boolean}
+ */
+export const isAuthorized = (role, allowedRolesOrPermissions) => {
+  if (!role) return false;
+  if (!allowedRolesOrPermissions) return true;
+
+  const requirements = Array.isArray(allowedRolesOrPermissions)
+    ? allowedRolesOrPermissions
+    : [allowedRolesOrPermissions];
+
+  return requirements.some(item => {
+    // If it's a known role string
+    if (ROLE_PERMISSIONS[item] !== undefined) {
+      return role === item;
+    }
+    // Otherwise check permission
+    return hasPermission(role, item);
+  });
 };

@@ -1,13 +1,20 @@
 import apiClient from "./apiClient";
 
-export const login = (data) => {
-  return apiClient.post("/auth/login", data);
+export const login = async (credentials) => {
+  // credentials can have { email, password } or { username, password }
+  const response = await apiClient.post("/auth/login", credentials);
+  return response.data;
 };
 
-export const logout = () => {
-  return apiClient.post("/auth/logout");
+export const logout = async () => {
+  const response = await apiClient.post("/auth/logout");
+  return response.data;
 };
 
-export const checkSession = () => {
-  return apiClient.get("/auth/me");
+export const getCurrentUser = async () => {
+  const response = await apiClient.get("/auth/me");
+  return response.data;
 };
+
+// Keep checkSession as an alias for getCurrentUser for compatibility with development branch code
+export const checkSession = getCurrentUser;

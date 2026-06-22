@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "../pages/public/HomePage";
+import PillarPage from "../pages/pillars/PillarPage";
 import LoginPage from "../pages/admin/LoginPage";
 import DashboardPage from "../pages/admin/DashboardPage";
 import ProtectedRoute from "./Protectedroute";
 import { PERMISSIONS } from "../lib/rbac";
-import PillarPage from "../pages/pillars/PillarPage";
 import UploadPage from "../pages/admin/UploadPage";
 
 export default function AppRoutes() {
@@ -14,7 +14,6 @@ export default function AppRoutes() {
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/pillars/:id" element={<PillarPage />} />
-        <Route path="/pillarpage/:id" element={<PillarPage />} />
         <Route path="/team/login" element={<LoginPage />} />
 
         {/* Protected Routes */}
