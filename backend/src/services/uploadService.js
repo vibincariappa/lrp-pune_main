@@ -106,7 +106,8 @@ const getUploadLogs = async () => {
             filename: true,
             createdAt: true,
             status: true,
-            isSynced: true
+            isSynced: true,
+            extractedData: true
         }
     });
     return logs;

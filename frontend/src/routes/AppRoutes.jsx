@@ -5,6 +5,7 @@ import DashboardPage from "../pages/admin/DashboardPage";
 import ProtectedRoute from "./Protectedroute";
 import { PERMISSIONS } from "../lib/rbac";
 import PillarPage from "../pages/pillars/PillarPage";
+import UploadPage from "../pages/admin/UploadPage";
 
 export default function AppRoutes() {
   return (
@@ -35,14 +36,7 @@ export default function AppRoutes() {
           path="/team/uploads"
           element={
             <ProtectedRoute requiredPermission={PERMISSIONS.UPLOAD_FILES}>
-              <div className="min-h-screen bg-[#fbf9f4] p-12 text-[#002045] flex flex-col justify-center items-center">
-                <div className="bg-white p-8 rounded-xl border border-[#c4c6cf]/30 shadow-md max-w-md w-full text-center">
-                  <span className="material-symbols-outlined text-4xl text-[#002045] mb-4">folder_shared</span>
-                  <h1 className="text-2xl font-serif font-bold mb-2">File Repositories</h1>
-                  <p className="text-[#43474e] text-sm mb-6">Authorized view for document storage and LRP uploads.</p>
-                  <Navigate to="/team/dashboard" replace />
-                </div>
-              </div>
+              <UploadPage />
             </ProtectedRoute>
           }
         />
