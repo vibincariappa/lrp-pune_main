@@ -1,5 +1,5 @@
 const fs = require("fs");
-const pdfParse = require("pdf-parse");
+const { PDFParse } = require("pdf-parse");
 
 const parsePdf =
 async(filePath)=>{
@@ -7,8 +7,9 @@ async(filePath)=>{
     const buffer =
         fs.readFileSync(filePath);
 
+    const parser = new PDFParse(new Uint8Array(buffer));
     const pdfData =
-        await pdfParse(buffer);
+        await parser.getText();
 
     return pdfData.text;
 

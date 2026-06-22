@@ -15,3 +15,6 @@ export const getCurrentUser = async () => {
   const response = await apiClient.get("/auth/me");
   return response.data;
 };
+
+// Keep checkSession as an alias for getCurrentUser for compatibility with development branch code
+export const checkSession = getCurrentUser;

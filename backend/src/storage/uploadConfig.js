@@ -1,7 +1,7 @@
 const multer = require("multer");
 const fs = require("fs");
 
-const uploadDir = "uploads/temp";
+const uploadDir = "uploads/documents";
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -16,10 +16,18 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    if (file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf")) {
+    const ext = file.originalname.toLowerCase();
+    const mime = file.mimetype;
+    if (
+        ext.endsWith(".pdf") || mime === "application/pdf" ||
+        ext.endsWith(".csv") || mime === "text/csv" ||
+        ext.endsWith(".txt") || mime === "text/plain"
+    ) {
         cb(null, true);
     } else {
-        cb(new Error("Only PDF files are allowed"), false);
+        const error = new Error("Only PDF, CSV, and TXT files are allowed");
+        error.statusCode = 400;
+        cb(error, false);
     }
 };
 

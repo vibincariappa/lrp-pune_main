@@ -94,3 +94,18 @@
   display: inline-block;
   vertical-align: middle;
 }
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-outline-variant, #c4c6cf);
+}
+
+.data-table-row:hover {
+  background-color: rgba(0, 32, 69, 0.03);
+  transition: all 0.2s ease;
+}
+
+.transition-soft {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
